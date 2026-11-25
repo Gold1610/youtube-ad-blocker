@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TubeShield - YouTube Ad Blocker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M12 2.5L4.5 5.6V11.3C4.5 16.1 7.7 20.4 12 21.8C16.3 20.4 19.5 16.1 19.5 11.3V5.6L12 2.5Z" fill="#ef4444"/>
+            <path d="M10.2 8.7L15.4 11.8L10.2 14.9V8.7Z" fill="#ffffff"/>
+          </svg>
+        </span>
+        <div class="brand-copy">
+          <h1 class="brand-title">TubeShield</h1>
+          <span id="statusBadge" class="status-pill" data-state="active">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="statusText">Đang bảo vệ YouTube</span>
+          </span>
+        </div>
+      </div>
+
+      <label class="power-switch" title="Bật / tắt toàn bộ tiện ích">
+        <input id="masterToggle" type="checkbox" checked aria-label="Bật hoặc tắt TubeShield" />
+        <span class="power-track">
+          <span class="power-thumb"></span>
+        </span>
+      </label>
+    </header>
+
+    <section class="card stats-card" aria-label="Thống kê chặn quảng cáo">
+      <div class="stats-header">
+        <div>
+          <p class="eyebrow">Đã chặn trên YouTube</p>
+          <p id="totalBlocked" class="hero-stat">0</p>
+        </div>
+        <button id="resetStatsBtn" class="ghost-btn" type="button">Đặt lại</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-pill">
+          <span class="stat-label">Quảng cáo video</span>
+          <span id="videoBlocked" class="stat-value">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Banner &amp; thẻ tài trợ</span>
+          <span id="feedBlocked" class="stat-value">0</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="channelSection" class="card channel-card" aria-label="Tùy chỉnh theo kênh">
+      <div class="channel-info">
+        <p class="eyebrow">Kênh hiện tại</p>
+        <p id="channelName" class="channel-name">Chưa mở kênh YouTube</p>
+        <p id="channelHint" class="channel-hint">Mở video YouTube để bật/tắt riêng.</p>
+      </div>
+      <button id="channelActionBtn" class="action-btn" type="button" disabled>
+        Tạm dừng kênh này
+      </button>
+    </section>
+
+    <section class="card controls-card" aria-label="Cấu hình lớp lọc">
+      <label class="setting-row">
+        <span class="setting-copy">
+          <span class="setting-title">Chặn quảng cáo trong video</span>
+          <span class="setting-sub">Lọc dữ liệu adPlacements ở lớp player</span>
+        </span>
+        <span class="mini-switch">
+          <input id="toggleVideoAds" type="checkbox" checked />
+          <span class="mini-track"><span class="mini-thumb"></span></span>
+        </span>
+      </label>
+
+      <label class="setting-row">
+        <span class="setting-copy">
+          <span class="setting-title">Tự động tua &amp; bấm Skip</span>
+          <span class="setting-sub">Tắt tiếng tạm, tua 16x và bấm Bỏ qua</span>
+        </span>
+        <span class="mini-switch">
+          <input id="toggleAutoSkip" type="checkbox" checked />
+          <span class="mini-track"><span class="mini-thumb"></span></span>
+        </span>
+      </label>
+
+      <label class="setting-row">
+        <span class="setting-copy">
+          <span class="setting-title">Ẩn banner &amp; thẻ tài trợ</span>
+          <span class="setting-sub">Làm sạch trang chủ, tìm kiếm và sidebar</span>
+        </span>
+        <span class="mini-switch">
+          <input id="toggleFeedAds" type="checkbox" checked />
+          <span class="mini-track"><span class="mini-thumb"></span></span>
+        </span>
+      </label>
+
+      <label class="setting-row">
+        <span class="setting-copy">
+          <span class="setting-title">Chặn mạng quảng cáo (DNR)</span>
+          <span class="setting-sub">Tắt mục này nếu YouTube hiện cảnh báo chặn QC</span>
+        </span>
+        <span class="mini-switch">
+          <input id="toggleDnr" type="checkbox" checked />
+          <span class="mini-track"><span class="mini-thumb"></span></span>
+        </span>
+      </label>
+    </section>
+  </main>
+
+  <script src="../shared/settings.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

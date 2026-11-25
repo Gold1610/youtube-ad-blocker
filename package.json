@@ -1,0 +1,9 @@
+{
+  "name": "tubeshield-youtube-ad-blocker",
+  "version": "1.0.0",
+  "description": "Manifest V3 YouTube ad blocker extension with player interception, smart auto-skip, cosmetic filtering, and per-channel whitelist.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests"
+  }
+}
