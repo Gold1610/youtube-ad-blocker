@@ -22,3 +22,10 @@ Extension chặn quảng cáo YouTube tự viết theo chuẩn Chrome Manifest V
 ```bash
 npm test
 ```
+
+## Cập nhật (Changelog)
+
+### v1.0.1 (2026-11-27)
+- **Fix lớp phủ chặn xem video:** Ẩn và tự động đóng `tp-yt-iron-overlay-backdrop.opened` đi kèm `ytd-enforcement-message-view-model` để không còn màn hình tối chặn thao tác trên player.
+- **Giảm kích hoạt anti-adblock:** Đặt mặc định `enableDnr: false` (vẫn có thể bật/tắt thủ công trong popup) và lọc thêm `enforcementMessageViewModel` ở lớp Player JSON.
+- **Tự động phát tiếp (Auto-resume):** Khi tự động đóng popup cảnh báo của YouTube, nếu video bị tạm dừng bởi cảnh báo thì tự động gọi `play()` lại để giữ trải nghiệm autoplay bình thường.
