@@ -42,6 +42,7 @@ test('manifest.json is valid MV3, references existing files, and scopes permissi
 
   for (const rs of manifest.declarative_net_request?.rule_resources || []) {
     assert.ok(fs.existsSync(path.join(ROOT, rs.path)), `Missing DNR ruleset: ${rs.path}`);
+    assert.equal(rs.enabled, false);
   }
 });
 

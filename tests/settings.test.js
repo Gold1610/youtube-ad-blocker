@@ -11,7 +11,7 @@ test('getDefaultSettings returns fresh default config with zeroed stats', () => 
     enabled: true,
     blockVideoAds: true,
     hideFeedAds: true,
-    enableDnr: true,
+    enableDnr: false,
     autoSkipAds: true,
     whitelistedChannels: [],
     stats: {
@@ -67,7 +67,7 @@ test('sanitizeSettings recovers safely from malformed or polluted storage data',
   assert.equal(clean.enabled, true);
   assert.equal(clean.blockVideoAds, false);
   assert.equal(clean.hideFeedAds, true);
-  assert.equal(clean.enableDnr, true);
+  assert.equal(clean.enableDnr, false);
   assert.deepEqual(clean.whitelistedChannels, ['@demo', '__proto__']);
   assert.equal(clean.stats.totalBlocked, 0);
   assert.equal(clean.stats.videoAdsBlocked, 12);

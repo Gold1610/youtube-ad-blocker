@@ -21,6 +21,7 @@ html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] .ytp-ad-over
 html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] .ytp-ad-text-overlay,
 html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] .ytp-ad-action-interstitial,
 html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] ytd-enforcement-message-view-model,
-html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] tp-yt-paper-dialog:has(ytd-enforcement-message-view-model) {
+html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
+html[data-tube-shield-active="1"][data-tube-shield-block-video="1"] body:has(tp-yt-paper-dialog ytd-enforcement-message-view-model) tp-yt-iron-overlay-backdrop.opened {
   display: none !important;
 }

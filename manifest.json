@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TubeShield - YouTube Ad Blocker",
   "short_name": "TubeShield",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chặn quảng cáo video, banner, thẻ tài trợ trên YouTube với bộ lọc player MV3, tự động tua/bỏ qua và danh sách bỏ qua theo kênh.",
   "icons": {
     "16": "icons/icon16.png",
@@ -37,7 +37,7 @@
     "rule_resources": [
       {
         "id": "youtube_ads_ruleset",
-        "enabled": true,
+        "enabled": false,
         "path": "rules/youtube-ads.json"
       }
     ]

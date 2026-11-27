@@ -14,7 +14,8 @@
     'adPlacements',
     'playerAds',
     'adSlots',
-    'adBreakHeartbeatParams'
+    'adBreakHeartbeatParams',
+    'enforcementMessageViewModel'
   ]);
 
   const AD_RENDERER_KEYS = new Set([

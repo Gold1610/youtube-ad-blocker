@@ -41,14 +41,18 @@ async function syncBadge(settings) {
   }
 }
 
-async function initializeExtension() {
+async function initializeExtension(details) {
   const current = await getStoredSettings();
-  await chrome.storage.local.set(current);
-  await Promise.all([syncDnrRuleset(current), syncBadge(current)]);
+  const next =
+    details && details.reason === 'update' && details.previousVersion === '1.0.0'
+      ? { ...current, enableDnr: false }
+      : current;
+  await chrome.storage.local.set(next);
+  await Promise.all([syncDnrRuleset(next), syncBadge(next)]);
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-  void initializeExtension();
+chrome.runtime.onInstalled.addListener((details) => {
+  void initializeExtension(details);
 });
 
 chrome.runtime.onStartup.addListener(() => {

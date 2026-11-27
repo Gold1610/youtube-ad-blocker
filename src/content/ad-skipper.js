@@ -74,6 +74,57 @@
       return clicked;
     }
 
+    dismissEnforcementDialogs(doc) {
+      const dialogs = doc.querySelectorAll('tp-yt-paper-dialog');
+      let hasEnforcementDialog = false;
+      let hasOtherOpenedDialog = false;
+
+      for (const dialog of dialogs) {
+        const isEnforcement = Boolean(
+          typeof dialog.querySelector === 'function' &&
+            dialog.querySelector('ytd-enforcement-message-view-model')
+        );
+        if (isEnforcement) {
+          hasEnforcementDialog = true;
+          const closeBtn =
+            dialog.querySelector('button[aria-label="Close"], #dismiss-button') || null;
+          if (closeBtn && !closeBtn.disabled && typeof closeBtn.click === 'function') {
+            closeBtn.click();
+          }
+          if (typeof dialog.close === 'function') {
+            try {
+              dialog.close();
+            } catch {
+              // Ignore Polymer close errors
+            }
+          }
+          if (typeof dialog.removeAttribute === 'function') {
+            dialog.removeAttribute('opened');
+          }
+        } else if (typeof dialog.hasAttribute === 'function' && dialog.hasAttribute('opened')) {
+          hasOtherOpenedDialog = true;
+        }
+      }
+
+      if (hasEnforcementDialog && !hasOtherOpenedDialog) {
+        const backdrops = doc.querySelectorAll('tp-yt-iron-overlay-backdrop.opened');
+        for (const backdrop of backdrops) {
+          if (backdrop.classList && typeof backdrop.classList.remove === 'function') {
+            backdrop.classList.remove('opened');
+          }
+          if (typeof backdrop.close === 'function') {
+            try {
+              backdrop.close();
+            } catch {
+              // Ignore backdrop close errors
+            }
+          }
+        }
+      }
+
+      return hasEnforcementDialog;
+    }
+
     tick(doc, { active = true, autoSkipAds = true } = {}) {
       if (!doc) return { adActive: false, handled: 0 };
 
@@ -87,6 +138,17 @@
         return { adActive: false, handled: 0 };
       }
 
+      const dismissedEnforcement = this.dismissEnforcementDialogs(doc);
+      if (dismissedEnforcement && video && video.paused && !video.ended && typeof video.play === 'function') {
+        try {
+          const playPromise = video.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
+          }
+        } catch {
+          // Ignore autoplay restriction errors
+        }
+      }
       let handled = this.closeOverlayAds(doc);
       const adActive = Boolean(
         player &&

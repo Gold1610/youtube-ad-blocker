@@ -60,6 +60,20 @@ test('prunePlayerPayload respects pruneVideoAds false option and handles empty i
   });
 });
 
+test('prunePlayerPayload strips enforcementMessageViewModel from auxiliaryUi', () => {
+  const payload = {
+    videoDetails: { videoId: 'ok' },
+    auxiliaryUi: {
+      messageRenderers: {
+        enforcementMessageViewModel: { isVisible: true }
+      }
+    }
+  };
+  const res = adPruner.prunePlayerPayload(payload, { pruneVideoAds: true });
+  assert.equal(res.removedCount, 1);
+  assert.equal('enforcementMessageViewModel' in res.data.auxiliaryUi.messageRenderers, false);
+});
+
 test('pruneFeedPayload removes promoted and ad-slot renderers from nested feeds immutably', () => {
   const feed = {
     contents: {

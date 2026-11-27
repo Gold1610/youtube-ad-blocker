@@ -25,10 +25,15 @@ function createFakeEnvironment({
     currentTime,
     duration,
     paused: false,
+    ended: false,
     playCalls: 0,
     play() {
       this.playCalls += 1;
+      this.paused = false;
       return Promise.resolve();
+    },
+    pause() {
+      this.paused = true;
     }
   };
 
@@ -191,4 +196,126 @@ test('AdSkipperController restores playback and stops intervening when paused or
   assert.equal(video.volume, 0.8);
   assert.equal(video.playbackRate, 1);
   assert.equal(skipBtn.clicks, 1);
+});
+
+test('AdSkipperController dismisses enforcement dialog and stray backdrop without touching normal dialogs', () => {
+  const closeBtn = makeButton('Close', true);
+  let enforcementOpened = true;
+  let enforcementClosed = 0;
+  const enforcementDialog = {
+    hasEnforcement: true,
+    hasAttribute(name) {
+      return name === 'opened' && enforcementOpened;
+    },
+    removeAttribute(name) {
+      if (name === 'opened') enforcementOpened = false;
+    },
+    close() {
+      enforcementClosed += 1;
+      enforcementOpened = false;
+    },
+    querySelector(sel) {
+      if (sel.includes('ytd-enforcement-message-view-model')) return {};
+      if (sel.includes('Close')) return closeBtn;
+      return null;
+    }
+  };
+
+  const backdropClasses = new Set(['opened']);
+  const backdrop = {
+    classList: {
+      contains(name) {
+        return backdropClasses.has(name);
+      },
+      remove(name) {
+        backdropClasses.delete(name);
+      }
+    }
+  };
+
+  let normalDialogOpened = false;
+  const normalDialog = {
+    hasAttribute(name) {
+      return name === 'opened' && normalDialogOpened;
+    },
+    querySelector() {
+      return null;
+    }
+  };
+
+  const doc = {
+    querySelector(sel) {
+      if (sel === '.html5-video-player') return null;
+      if (sel === 'video.html5-main-video, .html5-video-player video') return null;
+      return null;
+    },
+    querySelectorAll(sel) {
+      if (sel === 'tp-yt-paper-dialog') return [enforcementDialog, normalDialog];
+      if (sel === 'tp-yt-iron-overlay-backdrop.opened') {
+        return backdropClasses.has('opened') ? [backdrop] : [];
+      }
+      return [];
+    }
+  };
+
+  const controller = new AdSkipperController();
+  controller.tick(doc, { active: true, autoSkipAds: true });
+
+  assert.equal(closeBtn.clicks, 1);
+  assert.equal(enforcementOpened, false);
+  assert.equal(enforcementClosed, 1);
+  assert.equal(backdropClasses.has('opened'), false);
+
+  // If a normal non-enforcement dialog is open, its backdrop must stay untouched
+  normalDialogOpened = true;
+  backdropClasses.add('opened');
+  enforcementOpened = false;
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(backdropClasses.has('opened'), true);
+});
+
+test('AdSkipperController resumes paused video after dismissing enforcement dialog', () => {
+  let enforcementOpened = true;
+  const enforcementDialog = {
+    hasAttribute(name) {
+      return name === 'opened' && enforcementOpened;
+    },
+    removeAttribute(name) {
+      if (name === 'opened') enforcementOpened = false;
+    },
+    close() {
+      enforcementOpened = false;
+    },
+    querySelector(sel) {
+      if (sel.includes('ytd-enforcement-message-view-model')) return {};
+      return null;
+    }
+  };
+
+  const video = {
+    paused: true,
+    ended: false,
+    playCalls: 0,
+    play() {
+      this.playCalls += 1;
+      this.paused = false;
+      return Promise.resolve();
+    }
+  };
+
+  const doc = {
+    querySelector(sel) {
+      if (sel === 'video.html5-main-video, .html5-video-player video') return video;
+      return null;
+    },
+    querySelectorAll(sel) {
+      if (sel === 'tp-yt-paper-dialog') return [enforcementDialog];
+      return [];
+    }
+  };
+
+  const controller = new AdSkipperController();
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(video.playCalls, 1);
+  assert.equal(video.paused, false);
 });

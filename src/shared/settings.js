@@ -16,7 +16,7 @@
       enabled: true,
       blockVideoAds: true,
       hideFeedAds: true,
-      enableDnr: true,
+      enableDnr: false,
       autoSkipAds: true,
       whitelistedChannels: [],
       stats: {
