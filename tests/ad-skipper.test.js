@@ -295,10 +295,14 @@ test('AdSkipperController resumes paused video after dismissing enforcement dial
   const video = {
     paused: true,
     ended: false,
+    readyState: 0,
     playCalls: 0,
     play() {
       this.playCalls += 1;
-      this.paused = false;
+      // Simulate YouTube keeping it paused while readyState < 2 on first attempt
+      if (this.readyState >= 2) {
+        this.paused = false;
+      }
       return Promise.resolve();
     }
   };
@@ -315,13 +319,20 @@ test('AdSkipperController resumes paused video after dismissing enforcement dial
   };
 
   const controller = new AdSkipperController();
+  // Tick 1: dialog dismissed while readyState === 0
   controller.tick(doc, { active: true, autoSkipAds: true });
   assert.equal(video.playCalls, 1);
+  assert.equal(video.paused, true);
+
+  // Tick 2: dialog is now closed, readyState becomes 4 -> resumes playback
+  video.readyState = 4;
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(video.playCalls, 2);
   assert.equal(video.paused, false);
 
-  // User manually pauses later while closed enforcement dialog remains in DOM: must stay paused
+  // Tick 3: user manually pauses later while closed enforcement dialog remains in DOM -> must stay paused
   video.paused = true;
   controller.tick(doc, { active: true, autoSkipAds: true });
-  assert.equal(video.playCalls, 1);
+  assert.equal(video.playCalls, 2);
   assert.equal(video.paused, true);
 });

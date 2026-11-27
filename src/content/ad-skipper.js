@@ -36,6 +36,7 @@
       this.inAdSession = false;
       this.handledCurrentAd = false;
       this.savedAudio = null;
+      this.pendingEnforcementResume = false;
     }
 
     restoreAudioAndSpeed(video) {
@@ -147,14 +148,27 @@
       }
 
       const dismissedEnforcement = this.dismissEnforcementDialogs(doc);
-      if (dismissedEnforcement && video && video.paused && !video.ended && typeof video.play === 'function') {
-        try {
-          const playPromise = video.play();
-          if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(() => {});
+      if (dismissedEnforcement) {
+        this.pendingEnforcementResume = true;
+      }
+
+      if (this.pendingEnforcementResume) {
+        if (!video || video.ended) {
+          this.pendingEnforcementResume = false;
+        } else if (!video.paused && (video.readyState === undefined || video.readyState >= 2)) {
+          this.pendingEnforcementResume = false;
+        } else if (video.paused && typeof video.play === 'function') {
+          try {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+              playPromise.catch(() => {});
+            }
+          } catch {
+            // Ignore autoplay restriction errors
           }
-        } catch {
-          // Ignore autoplay restriction errors
+          if (!video.paused && (video.readyState === undefined || video.readyState >= 2)) {
+            this.pendingEnforcementResume = false;
+          }
         }
       }
       let handled = this.closeOverlayAds(doc);
