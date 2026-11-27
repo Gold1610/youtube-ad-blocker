@@ -157,14 +157,24 @@
           this.pendingEnforcementResume = false;
         } else if (!video.paused && (video.readyState === undefined || video.readyState >= 2)) {
           this.pendingEnforcementResume = false;
-        } else if (video.paused && typeof video.play === 'function') {
-          try {
-            const playPromise = video.play();
-            if (playPromise && typeof playPromise.catch === 'function') {
-              playPromise.catch(() => {});
+        } else if (video.paused) {
+          const playButton = doc.querySelector('.ytp-play-button');
+          if (
+            player &&
+            player.classList &&
+            player.classList.contains('paused-mode') &&
+            isButtonClickable(playButton)
+          ) {
+            playButton.click();
+          } else if (typeof video.play === 'function') {
+            try {
+              const playPromise = video.play();
+              if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {});
+              }
+            } catch {
+              // Ignore autoplay restriction errors
             }
-          } catch {
-            // Ignore autoplay restriction errors
           }
           if (!video.paused && (video.readyState === undefined || video.readyState >= 2)) {
             this.pendingEnforcementResume = false;
