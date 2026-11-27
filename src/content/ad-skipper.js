@@ -37,6 +37,7 @@
       this.handledCurrentAd = false;
       this.savedAudio = null;
       this.pendingEnforcementResume = false;
+      this.seenEnforcementModels = new WeakSet();
     }
 
     restoreAudioAndSpeed(video) {
@@ -82,17 +83,21 @@
       let hasOtherOpenedDialog = false;
 
       for (const dialog of dialogs) {
-        const isEnforcement = Boolean(
-          typeof dialog.querySelector === 'function' &&
-            dialog.querySelector('ytd-enforcement-message-view-model')
-        );
-        if (isEnforcement) {
+        const enfModel =
+          typeof dialog.querySelector === 'function'
+            ? dialog.querySelector('ytd-enforcement-message-view-model')
+            : null;
+        if (enfModel) {
           hasEnforcementDialog = true;
+          const isNewModel = typeof enfModel === 'object' && !this.seenEnforcementModels.has(enfModel);
+          if (isNewModel) {
+            this.seenEnforcementModels.add(enfModel);
+          }
           const wasOpened = Boolean(
             dialog.opened ||
               (typeof dialog.hasAttribute === 'function' && dialog.hasAttribute('opened'))
           );
-          if (wasOpened) {
+          if (wasOpened || isNewModel) {
             dismissedNewlyOpened = true;
           }
           const closeBtn =

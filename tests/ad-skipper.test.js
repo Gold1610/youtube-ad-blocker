@@ -276,6 +276,7 @@ test('AdSkipperController dismisses enforcement dialog and stray backdrop withou
 
 test('AdSkipperController resumes paused video after dismissing enforcement dialog', () => {
   let enforcementOpened = true;
+  const enfModel = {};
   const enforcementDialog = {
     hasAttribute(name) {
       return name === 'opened' && enforcementOpened;
@@ -287,7 +288,7 @@ test('AdSkipperController resumes paused video after dismissing enforcement dial
       enforcementOpened = false;
     },
     querySelector(sel) {
-      if (sel.includes('ytd-enforcement-message-view-model')) return {};
+      if (sel.includes('ytd-enforcement-message-view-model')) return enfModel;
       return null;
     }
   };
@@ -334,5 +335,52 @@ test('AdSkipperController resumes paused video after dismissing enforcement dial
   video.paused = true;
   controller.tick(doc, { active: true, autoSkipAds: true });
   assert.equal(video.playCalls, 2);
+  assert.equal(video.paused, true);
+});
+
+test('AdSkipperController resumes playback when new enforcement model appears even before opened attribute', () => {
+  const enfModel = {};
+  const enforcementDialog = {
+    hasAttribute() {
+      return false;
+    },
+    removeAttribute() {},
+    close() {},
+    querySelector(sel) {
+      if (sel.includes('ytd-enforcement-message-view-model')) return enfModel;
+      return null;
+    }
+  };
+  const video = {
+    paused: true,
+    ended: false,
+    readyState: 4,
+    playCalls: 0,
+    play() {
+      this.playCalls += 1;
+      this.paused = false;
+      return Promise.resolve();
+    }
+  };
+  const doc = {
+    querySelector(sel) {
+      if (sel === 'video.html5-main-video, .html5-video-player video') return video;
+      return null;
+    },
+    querySelectorAll(sel) {
+      if (sel === 'tp-yt-paper-dialog') return [enforcementDialog];
+      return [];
+    }
+  };
+
+  const controller = new AdSkipperController();
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(video.playCalls, 1);
+  assert.equal(video.paused, false);
+
+  // Manual pause afterwards stays paused
+  video.paused = true;
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(video.playCalls, 1);
   assert.equal(video.paused, true);
 });
