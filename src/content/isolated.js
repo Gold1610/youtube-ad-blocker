@@ -92,12 +92,29 @@
     }
   }
 
+  function isEditableTarget(target) {
+    if (!target || typeof target.tagName !== 'string') return false;
+    const tag = target.tagName.toUpperCase();
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || Boolean(target.isContentEditable);
+  }
+
+  function handleUserToggleIntent() {
+    const video = document.querySelector('video.html5-main-video, .html5-video-player video');
+    if (!video) return;
+    if (!video.paused) {
+      skipper.markUserPaused();
+    } else {
+      skipper.clearUserPaused();
+    }
+  }
+
   function runSkipperPass() {
     currentChannel = channelLib.detectCurrentChannel(document, window.location);
     syncDomDataset();
     skipper.tick(document, {
       active: isActiveForPage(),
-      autoSkipAds: currentSettings.autoSkipAds
+      autoSkipAds: currentSettings.autoSkipAds,
+      navKey: window.location.pathname + window.location.search
     });
     countNewlyHiddenFeedAds();
   }
@@ -170,6 +187,32 @@
     });
   }
 
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (event.isTrusted === false) return;
+      const target = event.target;
+      if (target && typeof target.closest === 'function' && target.closest('.html5-video-player')) {
+        handleUserToggleIntent();
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.isTrusted === false || isEditableTarget(event.target)) return;
+      if (event.code === 'Space' || event.key === ' ' || event.key === 'k' || event.key === 'K') {
+        handleUserToggleIntent();
+      }
+    },
+    true
+  );
+
+  window.addEventListener('yt-navigate-start', () => {
+    skipper.syncNavigation(window.location.pathname + window.location.search);
+  });
   window.addEventListener('yt-navigate-finish', runSkipperPass);
   window.addEventListener('yt-page-data-updated', runSkipperPass);
 

@@ -38,6 +38,27 @@
       this.savedAudio = null;
       this.pendingEnforcementResume = false;
       this.seenEnforcementModels = new WeakSet();
+      this.userPaused = false;
+      this.currentNavKey = null;
+      this.enforcementResumeCount = 0;
+    }
+
+    syncNavigation(navKey) {
+      if (navKey && navKey !== this.currentNavKey) {
+        this.currentNavKey = navKey;
+        this.userPaused = false;
+        this.pendingEnforcementResume = false;
+        this.enforcementResumeCount = 0;
+      }
+    }
+
+    markUserPaused() {
+      this.userPaused = true;
+      this.pendingEnforcementResume = false;
+    }
+
+    clearUserPaused() {
+      this.userPaused = false;
     }
 
     restoreAudioAndSpeed(video) {
@@ -136,11 +157,18 @@
         }
       }
 
-      return dismissedNewlyOpened;
+      return {
+        dismissedNewlyOpened,
+        hasEnforcementDialog
+      };
     }
 
-    tick(doc, { active = true, autoSkipAds = true } = {}) {
+    tick(doc, { active = true, autoSkipAds = true, navKey = null } = {}) {
       if (!doc) return { adActive: false, handled: 0 };
+
+      if (navKey) {
+        this.syncNavigation(navKey);
+      }
 
       const player = doc.querySelector(PLAYER_SELECTOR);
       const video = doc.querySelector(VIDEO_SELECTOR);
@@ -152,17 +180,28 @@
         return { adActive: false, handled: 0 };
       }
 
-      const dismissedEnforcement = this.dismissEnforcementDialogs(doc);
-      if (dismissedEnforcement) {
+      const { dismissedNewlyOpened, hasEnforcementDialog } = this.dismissEnforcementDialogs(doc);
+      if (dismissedNewlyOpened) {
+        this.pendingEnforcementResume = true;
+      } else if (
+        hasEnforcementDialog &&
+        !this.userPaused &&
+        video &&
+        video.paused &&
+        !video.ended &&
+        this.enforcementResumeCount < 3 &&
+        (typeof video.currentTime !== 'number' || video.currentTime < 15)
+      ) {
         this.pendingEnforcementResume = true;
       }
 
       if (this.pendingEnforcementResume) {
-        if (!video || video.ended) {
+        if (!video || video.ended || this.userPaused) {
           this.pendingEnforcementResume = false;
         } else if (!video.paused && (video.readyState === undefined || video.readyState >= 2)) {
           this.pendingEnforcementResume = false;
         } else if (video.paused) {
+          this.enforcementResumeCount += 1;
           const playButton = doc.querySelector('.ytp-play-button');
           if (
             player &&
