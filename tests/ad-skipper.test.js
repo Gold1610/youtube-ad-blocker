@@ -318,4 +318,10 @@ test('AdSkipperController resumes paused video after dismissing enforcement dial
   controller.tick(doc, { active: true, autoSkipAds: true });
   assert.equal(video.playCalls, 1);
   assert.equal(video.paused, false);
+
+  // User manually pauses later while closed enforcement dialog remains in DOM: must stay paused
+  video.paused = true;
+  controller.tick(doc, { active: true, autoSkipAds: true });
+  assert.equal(video.playCalls, 1);
+  assert.equal(video.paused, true);
 });

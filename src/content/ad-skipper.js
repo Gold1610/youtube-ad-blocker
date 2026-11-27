@@ -77,6 +77,7 @@
     dismissEnforcementDialogs(doc) {
       const dialogs = doc.querySelectorAll('tp-yt-paper-dialog');
       let hasEnforcementDialog = false;
+      let dismissedNewlyOpened = false;
       let hasOtherOpenedDialog = false;
 
       for (const dialog of dialogs) {
@@ -86,6 +87,13 @@
         );
         if (isEnforcement) {
           hasEnforcementDialog = true;
+          const wasOpened = Boolean(
+            dialog.opened ||
+              (typeof dialog.hasAttribute === 'function' && dialog.hasAttribute('opened'))
+          );
+          if (wasOpened) {
+            dismissedNewlyOpened = true;
+          }
           const closeBtn =
             dialog.querySelector('button[aria-label="Close"], #dismiss-button') || null;
           if (closeBtn && !closeBtn.disabled && typeof closeBtn.click === 'function') {
@@ -122,7 +130,7 @@
         }
       }
 
-      return hasEnforcementDialog;
+      return dismissedNewlyOpened;
     }
 
     tick(doc, { active = true, autoSkipAds = true } = {}) {
